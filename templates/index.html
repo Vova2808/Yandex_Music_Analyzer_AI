@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yandex Playlist Analysis</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1e1e1e;
+            border-radius: 50px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            color: #00FFFF;
+            font-size: 36px;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.8), 0 0 10px rgba(0, 255, 255, 0.6), 0 0 15px rgba(0, 255, 255, 0.4);
+            animation: glow 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            0% {
+                text-shadow: 0 0 5px rgba(0, 255, 255, 0.8), 0 0 10px rgba(0, 255, 255, 0.6), 0 0 15px rgba(0, 255, 255, 0.4);
+            }
+            100% {
+                text-shadow: 0 0 15px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.6), 0 0 45px rgba(0, 255, 255, 0.4);
+            }
+        }
+
+        input {
+            width: 80%;
+            background-color: #1a1a1a;
+            color: #fff;
+            border: none;
+            outline: none;
+            padding: 10px;
+            border-radius: 50px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5), 0 0 20px rgba(0, 255, 255, 0.3);
+            transition: box-shadow 0.3s ease-in-out;
+        }
+
+        input:focus {
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.6);
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #0078d7;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #005a9e;
+        }
+
+        .analysis-container {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            text-align: left;
+            white-space: pre-wrap;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Yandex Playlist Analysis</h1>
+        <form id="playlist-form">
+            <input type="text" name="playlist_url" placeholder="Введите ссылку на плейлист">
+            <button type="submit">Анализировать</button>
+        </form>
+
+        <!-- Анализ личности -->
+        <div id="personality-analysis" class="analysis-container" style="display: none;"></div>
+    </div>
+
+    <script>
+        document.getElementById("playlist-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            const analysisContainer = document.getElementById("personality-analysis");
+            analysisContainer.style.display = "block";
+            analysisContainer.textContent = ""; // Очистить контейнер перед новым запросом
+
+            fetch("/analyze", {
+                method: "POST",
+                body: formData,
+            }).then(response => {
+                if (!response.ok) {
+                    analysisContainer.textContent = "Произошла ошибка при анализе.";
+                    return;
+                }
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+
+                function read() {
+                    reader.read().then(({ done, value }) => {
+                        if (done) return;
+                        analysisContainer.textContent += decoder.decode(value);
+                        read();
+                    });
+                }
+                read();
+            }).catch(err => {
+                analysisContainer.textContent = "Произошла ошибка.";
+            });
+        });
+    </script>
+</body>
+</html>
